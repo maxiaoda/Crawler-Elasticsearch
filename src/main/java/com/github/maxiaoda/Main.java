@@ -18,8 +18,12 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        List<String> linkPool = new ArrayList<>();//待处理的链接池
-        Set<String> processLinks = new HashSet<>();//已经处理的链接池
+
+        //待处理的链接池
+        List<String> linkPool = new ArrayList<>();
+
+        //已经处理的链接池
+        Set<String> processLinks = new HashSet<>();
         linkPool.add("https://sina.cn");
 
         while (!linkPool.isEmpty()) {
@@ -27,15 +31,23 @@ public class Main {
             //remove 删除并返回值，ArrayList从尾部删除更有效。
             String link = linkPool.remove(linkPool.size() - 1);
             if (processLinks.contains(link) || link.contains("https:\\/\\/")) {
-                continue;//符合条件的的链接，返回
+
+                //符合条件的的链接，返回
+                continue;
             }
 
             //只要新闻有关的，排除其它页面
             if (isNewsLink(link)) {
                 Document doc = httpGetAndParseHtml(link);
-                addHrefOfTheATagIntoLinkPool(linkPool, doc);//将<a>里的<href>加入到待处理的链接池（linkPool）
-                storeIntoDataOfNewsPage(link, doc);//储存新闻页面的数据，如果不是就什么也不做
-                processLinks.add(link);//添加到processLinks
+
+                //将<a>里的<href>加入到待处理的链接池（linkPool）
+                addHrefOfTheATagIntoLinkPool(linkPool, doc);
+
+                //储存新闻页面的数据，如果不是就什么也不做
+                storeIntoDataOfNewsPage(link, doc);
+
+                //添加到processLinks
+                processLinks.add(link);
             }
         }//不感兴趣不处理，返回
     }
@@ -56,7 +68,9 @@ public class Main {
                 String title = articleTags.get(0).child(0).text();
                 System.out.println(link);
                 System.out.println(title);
-//                System.out.println(articleTags.get(0).child(5).select("p"));//文章内容
+
+//                //文章内容
+//                System.out.println(articleTags.get(0).child(5).select("p"));
             }
         }
     }
