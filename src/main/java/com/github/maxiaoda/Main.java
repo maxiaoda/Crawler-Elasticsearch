@@ -1,5 +1,6 @@
 package com.github.maxiaoda;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -11,55 +12,93 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    private static final String USER_NAME = "root";
+    private static final String PASSWORD = "root";
 
-        //待处理的链接池
-        List<String> linkPool = new ArrayList<>();
+    @SuppressFBWarnings
+    public static void main(String[] args) throws IOException, SQLException {
+        Connection connection = DriverManager.getConnection("jdbc:h2:file:C:\\Users\\abc\\IdeaProjects\\Crawler-Elasticsearch\\news", USER_NAME, PASSWORD);
+        while (true) {
 
-        //已经处理的链接池
-        Set<String> processLinks = new HashSet<>();
-        linkPool.add("https://sina.cn");
+            List<String> linkPool = loadUrlsFromDatabase(connection, "select LINK from LINKS_TO_BE_PROCESSED");
 
-        while (!linkPool.isEmpty()) {
+            if (linkPool.isEmpty()) {
+                break;
+            }
 
             //remove 删除并返回值，ArrayList从尾部删除更有效。
             String link = linkPool.remove(linkPool.size() - 1);
-            if (processLinks.contains(link) || link.contains("https:\\/\\/")) {
+            insertLinkIntoDatabase(connection, link, "delete from LINKS_TO_BE_PROCESSED where link = ?");
 
+            if (isLinkProcessed(connection, link) || link.contains("https:\\/\\/")) {
                 //符合条件的的链接，返回
                 continue;
             }
 
-            //只要新闻有关的，排除其它页面
             if (isNewsLink(link)) {
                 Document doc = httpGetAndParseHtml(link);
-
-                //将<a>里的<href>加入到待处理的链接池（linkPool）
-                addHrefOfTheATagIntoLinkPool(linkPool, doc);
-
-                //储存新闻页面的数据，如果不是就什么也不做
+                parseUrlsFromPageAndStoreIntoDatabase(connection, doc);
                 storeIntoDataOfNewsPage(link, doc);
-
-                //添加到processLinks
-                processLinks.add(link);
+                insertLinkIntoDatabase(connection, link, "insert into LINKS_ALREADY_PROCESSED(LINK) values (?)");
             }
-        }//不感兴趣不处理，返回
-    }
-
-    private static void addHrefOfTheATagIntoLinkPool(List<String> linkPool, Document doc) {
-        ArrayList<Element> aTagLinksElement = doc.select("a");
-
-        for (Element aTagLink : aTagLinksElement) {
-            linkPool.add(aTagLink.attr("href"));
         }
     }
 
+    //将<a>里的<href>加入到待处理的链接池（linkPool）
+    private static void parseUrlsFromPageAndStoreIntoDatabase(Connection connection, Document doc) throws SQLException {
+        for (Element aTagLink : doc.select("a")) {
+            String href = aTagLink.attr("href");
+            insertLinkIntoDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(LINK) values (?)");
+        }
+    }
+
+    private static boolean isLinkProcessed(Connection connection, String link) throws SQLException {
+        ResultSet resultSet = null;
+        try (PreparedStatement statement = connection.prepareStatement("select LINK from LINKS_ALREADY_PROCESSED where LINK = ?")) {
+            statement.setString(1, link);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                return true;
+            }
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return false;
+    }
+
+    //每次处理后更新数据库,从待处理池中取一个；处理完后从池中删除，包括数据库。
+    private static void insertLinkIntoDatabase(Connection connection, String link, String sql) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, link);
+            statement.executeUpdate();
+        }
+    }
+
+    //待处理的链接池,从数据库加载即将处理的链接
+    private static List<String> loadUrlsFromDatabase(Connection connection, String sql) throws SQLException {
+        List<String> results = new ArrayList<>();
+        ResultSet resultSet = null;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                results.add(resultSet.getString(1));
+            }
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return results;
+    }
+
+    //储存新闻页面的数据，如果不是就什么也不做
     private static void storeIntoDataOfNewsPage(String link, Document doc) {
         ArrayList<Element> articleTags = doc.select("article");
 
@@ -69,27 +108,34 @@ public class Main {
                 System.out.println(link);
                 System.out.println(title);
 
+
 //                //文章内容
-//                System.out.println(articleTags.get(0).child(5).select("p"));
+//               articleTags.get(0).child(5).select("p");
             }
         }
     }
 
     private static Document httpGetAndParseHtml(String link) throws IOException {
-        //处理符合条件的
         CloseableHttpClient httpclient = HttpClients.createDefault();
+        //处理符合条件的
+        if (link.startsWith("//")) {
+            link = "https://" + link;
+        }
+
         HttpGet httpGet = new HttpGet(link);
         httpGet.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36");
 
         try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
-            System.out.println(response1.getStatusLine());
+
+            //System.out.println(response1.getStatusLine());
             HttpEntity entity1 = response1.getEntity();
 
-            String html = EntityUtils.toString(entity1, "UTF-8");
+            String html = EntityUtils.toString(entity1);
             return Jsoup.parse(html);
         }
     }
 
+    //只要新闻有关的，排除其它页面
     private static boolean isNewsLink(String link) {
         return isNotLoginPassport(link) && isNewsPage(link) || isSinaLink(link);
 
