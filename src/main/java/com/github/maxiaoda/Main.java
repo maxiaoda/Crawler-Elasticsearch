@@ -31,7 +31,7 @@ public class Main {
                 break;
             }
 
-            //remove 删除并返回值，ArrayList从尾部删除更有效。
+            //remove删除并返回值，ArrayList从尾部删除更有效。
             String link = linkPool.remove(linkPool.size() - 1);
             insertLinkIntoDatabase(connection, link, "delete from LINKS_TO_BE_PROCESSED where link = ?");
 
