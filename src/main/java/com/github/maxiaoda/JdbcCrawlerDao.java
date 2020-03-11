@@ -21,7 +21,7 @@ public class JdbcCrawlerDao implements CrawlerDao {
 
     //待处理的链接池,从数据库加载即将处理的链接
     @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
-    public String getNextLink(String sql) throws SQLException {
+    private String getNextLink(String sql) throws SQLException {
         ResultSet resultSet = null;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             resultSet = statement.executeQuery();
@@ -75,5 +75,15 @@ public class JdbcCrawlerDao implements CrawlerDao {
             }
         }
         return false;
+    }
+
+    @Override
+    public void insertToBeProcessedLink(String href) {
+
+    }
+
+    @Override
+    public void insertProcessedLink(String link) {
+
     }
 }
