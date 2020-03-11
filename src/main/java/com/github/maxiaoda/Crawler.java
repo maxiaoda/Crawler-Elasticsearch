@@ -15,31 +15,35 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class Crawler {
-    CrawlerDao dao = new MyBatisCrawlerDao();
+public class Crawler extends Thread {
+    private CrawlerDao dao;
 
-    private void run() throws SQLException, IOException {
-        String link;
+    public Crawler(CrawlerDao dao) {
+        this.dao = dao;
+    }
 
-        //先从数据库里拿出来一个链接，（拿出来并从数据库中删除）
-        while ((link = dao.getNextLinkThenDelete()) != null) {
-            if (dao.isLinkProcessed(link) || link.contains("https:\\/\\/")) {
-                //符合条件的的链接，返回
-                continue;
+    @Override
+    public void run() {
+        try {
+            String link;
+
+            //先从数据库里拿出来一个链接，（拿出来并从数据库中删除）
+            while ((link = dao.getNextLinkThenDelete()) != null) {
+                if (dao.isLinkProcessed(link) || link.contains("https:\\/\\/")) {
+                    //符合条件的的链接，返回
+                    continue;
+                }
+                if (isNewsLink(link)) {
+                    Document doc = httpGetAndParseHtml(link);
+                    parseUrlsFromPageAndStoreIntoDatabase(doc);
+                    storeIntoDataOfNewsPage(link, doc);
+                    dao.insertProcessedLink(link);
+                }
             }
-            if (isNewsLink(link)) {
-                Document doc = httpGetAndParseHtml(link);
-                parseUrlsFromPageAndStoreIntoDatabase(doc);
-                storeIntoDataOfNewsPage(link, doc);
-                dao.insertProcessedLink(link);
-            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
-
-    public static void main(String[] args) throws IOException, SQLException {
-        new Crawler().run();
-    }
-
 
     //将<a>里的<href>加入到待处理的链接池（linkPool）
     private void parseUrlsFromPageAndStoreIntoDatabase(Document doc) {
@@ -63,7 +67,6 @@ public class Crawler {
                 System.out.println(link);
                 System.out.println(title);
                 dao.insertNewsIntoDatabase(link, title, content);
-
             }
         }
     }

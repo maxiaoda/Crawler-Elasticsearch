@@ -24,7 +24,7 @@ public class MyBatisCrawlerDao implements CrawlerDao {
     }
 
     @Override
-    public String getNextLinkThenDelete() {
+    public synchronized String getNextLinkThenDelete() {
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
             String url = session.selectOne("com.github.maxiaoda.MyMapper.selectNextAvailableLink");
             if (url != null) {
@@ -33,7 +33,6 @@ public class MyBatisCrawlerDao implements CrawlerDao {
             return url;
         }
     }
-
 
     @Override
     public void insertNewsIntoDatabase(String url, String title, String content) {
