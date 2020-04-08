@@ -1,5 +1,5 @@
 # Crawler-Elasticsearch:多线程爬虫与ES数据分析
-使用 Java 编写爬虫，实现对新浪新闻站的 HTTP 请求、模拟登录、HTML 解析的功能。
+使用 Java 编写爬虫，实现对新闻网站的 HTTP 请求、模拟登录、HTML 解析的功能。
 筛选链接循环爬取新闻站内内容，连接 MySQL 数据库实现断点续传功能，使用 Elasticsearch 分析数据，并完成一个简单的搜索引擎。 
 
 * 使用 Git 进行版本控制，小步提交 PR 至 Github 主分支，用 Maven 进行依赖包的管理，
