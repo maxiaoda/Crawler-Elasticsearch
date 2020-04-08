@@ -1,6 +1,10 @@
 package com.github.maxiaoda;
 
-public class Main {
+import com.github.maxiaoda.dao.CrawlerDao;
+import com.github.maxiaoda.dao.MyBatisCrawlerDao;
+import com.github.maxiaoda.service.Crawler;
+
+public class CrawlerController {
     public static void main(String[] args) {
         CrawlerDao dao = new MyBatisCrawlerDao();
 

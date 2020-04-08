@@ -1,5 +1,6 @@
-package com.github.maxiaoda;
+package com.github.maxiaoda.dao;
 
+import com.github.maxiaoda.entity.News;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

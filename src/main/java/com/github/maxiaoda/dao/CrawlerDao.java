@@ -1,4 +1,4 @@
-package com.github.maxiaoda;
+package com.github.maxiaoda.dao;
 
 import java.sql.SQLException;
 

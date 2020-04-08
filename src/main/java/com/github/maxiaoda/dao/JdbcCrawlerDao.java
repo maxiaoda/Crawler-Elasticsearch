@@ -1,4 +1,4 @@
-package com.github.maxiaoda;
+package com.github.maxiaoda.dao;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

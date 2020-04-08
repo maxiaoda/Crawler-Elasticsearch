@@ -1,5 +1,6 @@
-package com.github.maxiaoda;
+package com.github.maxiaoda.service;
 
+import com.github.maxiaoda.dao.CrawlerDao;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

@@ -1,15 +1,47 @@
-package com.github.maxiaoda;
+package com.github.maxiaoda.entity;
+
+import java.time.Instant;
 
 public class News {
     private Integer id;
     private String url;
     private String content;
     private String title;
+    private Instant createdAt;
+    private Instant modifiedAt;
+
+    public News() {
+    }
 
     public News(String url, String title, String content) {
         this.url = url;
         this.title = title;
         this.content = content;
+    }
+
+    public News(News oldNews) {
+        this.id = oldNews.id;
+        this.url = oldNews.url;
+        this.content = oldNews.content;
+        this.title = oldNews.title;
+        this.createdAt = oldNews.createdAt;
+        this.modifiedAt = oldNews.modifiedAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 
     public Integer getId() {

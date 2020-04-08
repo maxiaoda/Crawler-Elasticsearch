@@ -2,26 +2,12 @@
 h2链接：
 `jdbc:h2:file:C:\Users\abc\IdeaProjects\Crawler-Elasticsearch\news`
 
-创建表
-```
-create table LINKS_TO_BE_PROCESSED(
-                 link varchar(2000)
-             );
+mysql链接:`jdbc:mysql://localhost:3306/crawler`
 
-create table LINKS_ALREADY_PROCESSED(
-                 link varchar(2000)
-             );
+工具清单：
 
-create table NEWS
-             (
-                 ID    bigint primary key auto_increment,
-                 TITLE text,
-                 CONTENT text,
-                 URL varchar(2000),
-                 CREATED_AT timestamp,
-                 MODIFIED_AT timestamp
-             );
-```
+flyway：数据库使用flyway插件管理
 
-             
+spotBugs：设置了`spotBugs`检测style
 
+circleci：部署ci管理github

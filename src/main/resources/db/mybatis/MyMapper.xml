@@ -13,9 +13,9 @@
         from LINKS_TO_BE_PROCESSED
         where LINK = #{link}
     </delete>
-    <insert id="insertNews" parameterType="com.github.maxiaoda.News">
+    <insert id="insertNews" parameterType="com.github.maxiaoda.entity.News">
         insert into NEWS (url, title, content, created_at, modified_at)
-        values (#{url}, #{title}, #{content}, noW(), now())
+        values (#{url}, #{title}, #{content}, now(), now())
     </insert>
     <select id="countLink" parameterType="String" resultType="int">
         select count(link)

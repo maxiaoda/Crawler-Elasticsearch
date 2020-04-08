@@ -11,6 +11,6 @@ ID    bigint primary key auto_increment,
 TITLE text,
 CONTENT text,
 URL varchar(2000),
-CREATED_AT timestamp,
-MODIFIED_AT timestamp
+CREATED_AT timestamp default now(),
+MODIFIED_AT timestamp default now()
 );
